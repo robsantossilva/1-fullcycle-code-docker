@@ -44,3 +44,6 @@ Image --> **push** --> Image Registry
 #### Instalando o Docker
 Docker foi feito para rodar no linux, por isso, se deseja ter alta performance use linux.
 Para Windows existe o WSL que é um subsistema linux no windows.
+
+#### Instalando WSL2
+https://github.com/codeedu/wsl2-docker-quickstart
