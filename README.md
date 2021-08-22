@@ -47,3 +47,39 @@ Para Windows existe o WSL que é um subsistema linux no windows.
 
 #### Instalando WSL2
 https://github.com/codeedu/wsl2-docker-quickstart
+
+#### Comandos Docker
+```bash
+docker ps #Lista containers
+docker run hello-world #Rodando uma imagem docker
+docker run -it ubuntu bash #Modo iterativo
+```
+
+#### Publicando portas com nginx
+Webserver/Proxy reverso
+```bash
+docker run nginx #executa o nginx
+docker run -p 8080:80 nginx #(-p --detach)executa o nginx deixando a porta 80 do container disponivel na porta 8080
+docker run -d -p 8080:80 nginx #(-d --detach)executa o nginx e deixa o terminal disponivel
+```
+#### Removendo containers
+```bash
+docker stop b2df619d6acf #Parar um container
+docker start b2df619d6acf #Reiniciar um container
+docker rm 43156aaf0cd0 #remover containers parados
+docker rm b2df619d6acf -f #forçar a remoção de um container que esta em execução
+docker rm $(docker ps -a -q) -f #remove todos os container
+```
+
+#### Acessando e alterando arquivos de um container
+```bash
+docker run -d -p 8080:80 --name nginx_01 nginx #Atribuindo um nome ao containers
+docker exec nginx_01 ls # Executa o comando "ls" no container
+docker exec -it nginx_01 bash # Executa comando no container e permanece no container no modo iterativo
+
+cd /usr/share/nginx/html/
+apt-get update
+apt-get install vim
+vim index.html
+```
+Container é imutavel, ao parar o container as alterações são perdidas
