@@ -83,3 +83,29 @@ apt-get install vim
 vim index.html
 ```
 Container é imutavel, ao parar o container as alterações são perdidas
+
+#### Iniciando com bind mounts
+```bash
+docker run -d --name nginx -p 8080:80 -v "$(pwd)"/html:/usr/share/nginx/html nginx
+docker run -d --name nginx -p 8080:80 --mount type=bind,source="$(pwd)"/html,target=/usr/share/nginx/html nginx
+```
+
+#### Trabalhando com volumes
+```bash
+docker volume
+docker volume create meuvolume
+docker volume inspect meuvolume
+[
+    {
+        "CreatedAt": "2021-08-30T14:20:50-03:00",
+        "Driver": "local",
+        "Labels": {},
+        "Mountpoint": "/var/lib/docker/volumes/meuvolume/_data",
+        "Name": "meuvolume",
+        "Options": {},
+        "Scope": "local"
+    }
+]
+docker run -d --name nginx -p 8080:80 --mount type=volume,source=meuvolume,target=/usr/share/nginx/html nginx
+docker run -d --name nginx -p 8080:80 -v meuvolume:/usr/share/nginx/html nginx
+```
