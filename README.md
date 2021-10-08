@@ -280,3 +280,80 @@ curl localhost:8080
 #     <h1>Docker volume!!!</h1>
 # </body>
 ```
+
+#### Colocando em prática
+
+##### Instalando framework em um container
+
+Gerando uma imagem docker com Laravel instalado.
+```bash
+docker run -it --name php php:7.4-cli bash
+
+apt-get update
+cd /var/www
+
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php -r "if (hash_file('sha384', 'composer-setup.php') === '756890a4488ce9024fc62c56153228907f1545c228516cbf63f885e036d37e9a59d27d63f46af1d4d07ee0f76181c7d3') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+php composer-setup.php
+php -r "unlink('composer-setup.php');"
+
+apt-get install libzip-dev -y
+docker-php-ext-install zip
+
+php composer.phar create-project --prefer-dist laravel/laravel laravel
+```
+
+Dockerfile criado de acordo com as etapas anteriores:
+[./laravel/Dockerfile](./laravel/Dockerfile])
+
+Executando o Dockerfile
+``` bash
+cd laravel
+docker build -t robsantossilva/laravel:latest .
+docker run --rm -d --name laravel -p 8000:8000 robsantossilva/laravel
+docker logs laravel
+```
+
+Usando outra porta:
+```bash
+docker run --rm -d --name laravel -p 8001:8001 robsantossilva/laravel --host=0.0.0.0 --port=8001
+```
+
+Subindo no dockerhub:
+``` bash
+docker push robsantossilva/laravel
+```
+
+##### Criando aplicação Node.js sem o Node
+``` bash
+docker run --rm -it -v $(pwd)/:/usr/src/app -p 3000:3000 node:15 bash
+npm init
+npm install express --save
+node index.js
+```
+
+##### Gerando imagem da aplicação Node.js
+[./node/Dockerfile](./node/Dockerfile)
+
+``` bash
+docker build -t robsantossilva/hello-express .
+docker run -p 3000:3000 robsantossilva/hello-express
+docker push robsantossilva/hello-express
+```
+
+##### Multi-stage builds - Otimizando imagens
+[./laravel/Dockerfile.prod](./laravel/Dockerfile.prod)
+``` bash
+docker build -t robsantossilva/laravel:prod . -f Dockerfile.prod
+docker run -p 9000:9000 robsantossilva/laravel:prod
+docker push robsantossilva/laravel
+```
+
+Colocando o Nginx para acessar o laravel
+[./nginx/nginx.conf](./nginx/nginx.conf)
+```bash
+docker build -t robsantossilva/nginx:prod . -f Dockerfile.prod
+docker network create laranet
+docker run -d --network laranet --name laravel robsantossilva/laravel:prod
+docker run -d --network laranet --name nginx -p 8080:80 robsantossilva/nginx:prod
+```
