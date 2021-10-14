@@ -357,3 +357,112 @@ docker network create laranet
 docker run -d --network laranet --name laravel robsantossilva/laravel:prod
 docker run -d --network laranet --name nginx -p 8080:80 robsantossilva/nginx:prod
 ```
+
+# Iniciando com Docker-compose
+[./docker-compose-laravel.yaml](./docker-compose-laravel.yaml)
+```bash
+docker-compose up
+```
+
+##### Construindo imagem
+```bash
+build:
+    context: ./nginx
+    dockerfile: Dockerfile.prod
+```
+
+Deixando o terminal disponivel:
+```bash
+docker-compose up -d
+```
+
+Desligando containers
+```bash
+docker-compose down
+```
+
+Reconstruindo container após alterações:
+```bash
+docker-compose up -d --build
+```
+
+##### Criando banco de dados MySQL
+[./docker-compose.yaml](./docker-compose.yaml)
+```bash
+docker-compose up
+```
+
+##### Configurando app node com docker-compose
+[./docker-compose.yaml](./docker-compose.yaml)
+``` bash
+app:
+    build:
+      context: node
+    container_name: app
+    networks:
+      - node-network
+    volumes:
+      - ./node:/usr/src/app
+    tty: true
+    ports:
+      - "3000:3000"
+```
+
+```bash
+docker-compose up -d --build
+```
+
+``` bash
+docker-compose exec db bash
+mysql -uroot -p
+use nodedb
+CREATE TABLE people(id int not null auto_increment, name varchar(255), primary key(id));
+desc people;
++-------+--------------+------+-----+---------+----------------+
+| Field | Type         | Null | Key | Default | Extra          |
++-------+--------------+------+-----+---------+----------------+
+| id    | int(11)      | NO   | PRI | NULL    | auto_increment |
+| name  | varchar(255) | YES  |     | NULL    |                |
++-------+--------------+------+-----+---------+----------------+
+```
+
+##### Node com MySQL
+```bash
+npm install mysql --save
+```
+[./node/index.js](./node/index.js)
+
+##### Dependencia entre Containers
+
+Define a ordem/dependencia de inicialização
+```bash
+depends_on
+```
+
+Dockerize
+https://github.com/jwilder/dockerize
+
+``` dockerfile
+RUN apt-get update && apt-get install -y wget
+
+ENV DOCKERIZE_VERSION v0.6.1
+RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
+    && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+```
+
+Comando Dockerize
+``` bash
+dockerize -wait tcp://db:3306
+dockerize -wait tcp://db:3306 -timeout 50s
+```
+
+Entrypoint
+``` dockerfile
+app:
+    build:
+      context: node
+    container_name: app
+    entrypoint: dockerize -wait tcp://db:3306 -timeout 20s docker-entrypoint.sh
+```
+
